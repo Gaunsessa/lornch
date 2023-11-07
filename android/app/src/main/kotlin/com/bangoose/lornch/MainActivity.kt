@@ -1,6 +1,7 @@
 package com.bangoose.lornch
 
 import android.content.pm.*
+import android.content.*;
 import androidx.annotation.NonNull
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -10,24 +11,26 @@ class MainActivity: FlutterActivity() {
    private val CHANNEL = "com.bangoose.lornch/android"
 
    private var PM: PackageManager? = null
+   private var APPS: List<ApplicationInfo>? = null
 
    override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
       super.configureFlutterEngine(flutterEngine)
 
       PM = getActivity().getPackageManager()
 
+      val intent = Intent(Intent.ACTION_MAIN, null)
+      intent.addCategory(Intent.CATEGORY_LAUNCHER)
+
+      APPS = PM!!.queryIntentActivities(intent, 0).map { it.activityInfo.applicationInfo }
+
       MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler {
          call, res ->
          when (call.method) {
             "getAppNames" -> {
-               val apps = PM!!.getInstalledApplications(PackageManager.GET_META_DATA)
-
-               res.success(apps.filter { (it.flags and ApplicationInfo.FLAG_SYSTEM) == 0 }.map { PM!!.getApplicationLabel(it) })
+               res.success(APPS!!.map { PM!!.getApplicationLabel(it) })
             }
             "getAppPackages" -> {
-               val apps = PM!!.getInstalledApplications(PackageManager.GET_META_DATA)
-
-               res.success(apps.filter { (it.flags and ApplicationInfo.FLAG_SYSTEM) == 0 }.map { it.packageName })
+               res.success(APPS!!.map { it.packageName })
             }
             "launchApp" -> {
                val app = call.arguments as String

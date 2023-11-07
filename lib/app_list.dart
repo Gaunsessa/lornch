@@ -77,18 +77,18 @@ class AppListState extends State<AppList> {
   KeyEventResult handleKeyEvent(FocusNode node, RawKeyEvent event) {
     if (event is RawKeyUpEvent) return KeyEventResult.ignored;
 
-    switch (event.physicalKey.usbHidUsage) {
+    switch (event.logicalKey) {
       // Select Button
-      case 0x1100000160:
+      case LogicalKeyboardKey.enter:
         apps[selected].launch();
         
         return KeyEventResult.handled;
       // Up Arrow
-      case 0x00070052:
+      case LogicalKeyboardKey.arrowUp:
         selected--;
         break;
       // Down Arrow
-      case 0x00070051:
+      case LogicalKeyboardKey.arrowDown:
         selected++;        
         break;
       default:
